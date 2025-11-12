@@ -16,7 +16,7 @@ with open(f"{path}/src/table.txt") as file:
         prefix, asn = line.split(" ")
         if int(asn) in config['asnList']:
             if not asn in analyze: analyze[asn] = {}
-            if not prefix in analyze[asn]: analyze[asn][prefix] = {}
+            if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0}
 
 for asn, data in analyze.items():
     if not os.path.isfile(f"{path}/data/{asn}.json"):
@@ -29,7 +29,7 @@ for file in files:
     for prefix, details in asnData.items():
         #ignore ipv6 for now
         if "::" in prefix: continue
-        if details: continue
+        if details['updated'] > int(time.time()): continue
         print(f"Analyzing {prefix}")
         subnets = tools.splitTo24(prefix)
         print(f"{prefix} splitted into {len(subnets)} subnet(s)")
@@ -39,6 +39,7 @@ for file in files:
             for run in range(0, len(ips), 10):
                 batch = ips[run+1:run+11]
                 results = tools.fping(batch)
+                asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
                 if not results: continue
                 if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
                 asnData[prefix][subnet] = results
