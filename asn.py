@@ -20,7 +20,7 @@ with open(f"{path}/src/table.txt") as file:
 
 for asn, data in analyze.items():
     if not os.path.isfile(f"{path}/data/{asn}.json"):
-        with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(data, f, indent=4)
+        with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(data, f)
 
 files = os.listdir(f"{path}/data/")
 for file in files:
@@ -44,4 +44,4 @@ for file in files:
                 if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
                 asnData[prefix][subnet] = results
                 break
-        with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f, indent=4)
+        with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
