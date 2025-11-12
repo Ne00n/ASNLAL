@@ -1,10 +1,19 @@
 from Class.base import Base
+import systemd.daemon
 import json, time, os
 
 tools = Base()
-first, change, refresh = True, False, 0
+first, change, refresh, shutdown = True, False, 0, False
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/asn.json") as handle: config =  json.loads(handle.read())
+
+def gracefulExit(signal_number,stack_frame):
+    systemd.daemon.notify('STOPPING=1')
+    shutdown = True
+
+signal.signal(signal.SIGINT, gracefulExit)
+signal.signal(signal.SIGTERM, gracefulExit)
+systemd.daemon.notify('READY=1')
 
 while True:
     if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*24) < int(time.time()):
@@ -74,5 +83,6 @@ while True:
                     asnData[prefix][subnet] = results
                     break
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
+            if shutdown: exit(0)
     print("Loop finished")
     time.sleep(300)
