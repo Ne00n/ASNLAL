@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
-apt-get install python3 python3-systemd python3-requests python3-fake-useragent python3-pip fping git -y
+apt-get install python3 python3-systemd python3-requests python3-pip fping git -y
 cd /opt/
 #git
 git clone https://github.com/Ne00n/ASNLAL.git

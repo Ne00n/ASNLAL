@@ -1,15 +1,12 @@
-from fake_useragent import UserAgent
 import ipaddress, subprocess, requests, time, re
 
 class Base:
 
     def __init__(self):
-        ua = UserAgent()
-        self.userAgent = ua.chrome
         self.fpingMatch = re.compile(r'(\d+\.\d+\.\d+\.\d+)\s+:.*?min/avg/max\s+=\s+[\d.]+/([\d.]+)/')
 
     def call(self,url,method="GET",payload={},headers={},max=5):
-        if not headers: headers = {'User-Agent':self.userAgent}
+        if not headers: headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'}
         allowedCodes, crashed = [200], False
         for run in range(1,max):
             try:
