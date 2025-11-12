@@ -10,7 +10,7 @@ TimeoutSec=300
 Restart=on-failure
 StandardOutput=null
 Environment=PYTHONUNBUFFERED=1
-WorkingDirectory=/opt/asnlal/
+WorkingDirectory=/opt/ASNLAL/
 ExecStart=/usr/bin/python3 asn.py
 [Install]
 WantedBy=multi-user.target
