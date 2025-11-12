@@ -7,7 +7,7 @@ cd /opt/
 git clone https://github.com/Ne00n/ASNLAL.git
 cd ASNLAL
 cp configs/asn.example.json configs/asn.json
-sed "s|\"asnSrc\": \"\"|\"asnSrc\": \"$1\"|" "configs/asn.json"
+sed -i "s|\"asnSrc\": \"\"|\"asnSrc\": \"$1\"|" "configs/asn.json"
 useradd asnlal -r -d /opt/ASNLAL -s /bin/bash
 chown -R asnlal:asnlal /opt/ASNLAL/
 #systemd diag service
