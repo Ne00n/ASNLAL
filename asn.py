@@ -85,4 +85,4 @@ while True:
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
             if shutdown: exit(0)
     print("Loop finished")
-    time.sleep(300)
+    time.sleep(30)
