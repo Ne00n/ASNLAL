@@ -4,7 +4,8 @@ import json, time, os
 tools = Base()
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/asn.json") as handle: config =  json.loads(handle.read())
-if not os.path.isfile(f"{path}/src/table.txt"):
+if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*24) < int(time.time()):
+    print(f"Fetching bgp.tools/table.txt")
     success, req = tools.call("https://bgp.tools/table.txt")
     if not success: exit("Failed to get table.txt")
     with open(f"{path}/src/table.txt", 'w') as file: file.write(req.text)
