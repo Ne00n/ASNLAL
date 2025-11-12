@@ -5,7 +5,7 @@ import json, time, os
 tools = Base()
 first, change, refresh, shutdown = True, False, 0, False
 path = os.path.dirname(os.path.realpath(__file__))
-with open(f"{path}/asn.json") as handle: config =  json.loads(handle.read())
+with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 
 def gracefulExit(signal_number,stack_frame):
     systemd.daemon.notify('STOPPING=1')
