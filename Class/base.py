@@ -1,11 +1,12 @@
 from fake_useragent import UserAgent
-import requests, time
+import ipaddress, subprocess, requests, time, re
 
 class Base:
 
     def __init__(self):
         ua = UserAgent()
-        self.userAgent = ua.chrome 
+        self.userAgent = ua.chrome
+        self.fpingMatch = re.compile(r'(\d+\.\d+\.\d+\.\d+)\s+:.*?min/avg/max\s+=\s+[\d.]+/([\d.]+)/')
 
     def call(self,url,method="GET",payload={},headers={},max=5):
         if not headers: headers = {'User-Agent':self.userAgent}
@@ -28,3 +29,25 @@ class Base:
             elif run == 4:
                 return False,None
             time.sleep(2)
+
+    def splitTo24(self,subnet):
+        network = ipaddress.ip_network(subnet)
+        return [str(subnet) for subnet in network.subnets(new_prefix=24)]
+
+    def getIPs(self,subnet):
+        network = ipaddress.ip_network(subnet)
+        return [str(ip) for ip in network]
+
+    def cmd(self,cmd,timeout=None):
+        try:
+            p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, timeout=timeout)
+            return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
+        except:
+            return ["",""]
+
+    def fping(self,targets,pings=3):
+        fping = f"fping -c {pings} "
+        fping += " ".join(targets)
+        result = self.cmd(fping)
+        matches = self.fpingMatch.findall(result[1])
+        return matches
