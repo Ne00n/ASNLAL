@@ -1,6 +1,6 @@
 from Class.base import Base
 import systemd.daemon
-import json, time, os
+import signal, json, time, os
 
 tools = Base()
 first, change, refresh, shutdown = True, False, 0, False
