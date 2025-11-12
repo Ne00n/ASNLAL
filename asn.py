@@ -2,7 +2,7 @@ from Class.base import Base
 import json, time, os
 
 tools = Base()
-first, change = True, False
+first, change, refresh = True, False, 0
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/asn.json") as handle: config =  json.loads(handle.read())
 
@@ -15,7 +15,16 @@ while True:
             change = True
         elif not success and not os.path.isfile(f"{path}/src/table.txt"): 
             exit("Failed to get table.txt")
-    
+
+    if config['asnSrc'] and refresh < int(time.time()):
+        print("Updating asn's")
+        success, req = tools.call(config['asnSrc'])
+        if success:
+            config['asnList'] = req.json()
+            refresh = int(time.time()) + (60*60)
+        elif not success and first:
+            exit("Failed to fetch asn's")
+
     if  first or change:
         print("Updating sources")
         analyze, first, change = {}, False, False
