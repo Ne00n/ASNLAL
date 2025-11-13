@@ -88,5 +88,4 @@ while True:
                         asnData[prefix][subnet] = results
                         break
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
-    print("Loop finished")
     time.sleep(2)
