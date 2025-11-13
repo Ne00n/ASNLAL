@@ -90,4 +90,7 @@ while True:
                         asnData[prefix][subnet] = results
                         break
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
+                if shutdown:
+                    print("Shutting down gracefully...")
+                    exit(0)
     time.sleep(2)
