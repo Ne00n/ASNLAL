@@ -45,9 +45,11 @@ while True:
             for line in file:
                 line = line.rstrip()
                 prefix, asn = line.split(" ")
-                if int(asn) in config['asnList']:
-                    if not asn in analyze: analyze[asn] = {}
-                    if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0}
+                for selectedASN, settings in config['asnList'].items():
+                    if int(asn) == int(selectedASN):
+                        if not asn in analyze: analyze[asn] = {}
+                        if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0}
+                        break
         
         print("Updating local asn's")
         for asn, data in analyze.items():
