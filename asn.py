@@ -48,7 +48,7 @@ while True:
                 for selectedASN, settings in config['asnList'].items():
                     if int(asn) == int(selectedASN):
                         if not asn in analyze: analyze[asn] = {}
-                        if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0}
+                        if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0,"settings":settings}
                         break
         
         print("Updating local asn's")
@@ -61,10 +61,12 @@ while True:
                     if not subnet in asnData:
                         print(f"Adding {subnet} to {asn}")
                         asnData[subnet] = details
-                for subnet in asnData:
+                for subnet in list(asnData):
                     if not subnet in data:
                         print(f"Deleting {subnet} from {asn}")
                         del asnData[subnet]
+                print(asnData)
+                print(asn)
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
 
         files = os.listdir(f"{path}/data/")
@@ -88,7 +90,7 @@ while True:
                         if not results: continue
                         if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
                         asnData[prefix][subnet] = results
-                        break
+                        if not "all" in details['settings']: break
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
                 if shutdown:
                     print("Shutting down gracefully...")
