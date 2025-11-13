@@ -90,7 +90,7 @@ while True:
                         if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
                         asnData[prefix][subnet] = results
                         if not "all" in details['settings']: break
-                with open(f"{path}/data/{file}.json", 'w') as f: json.dump(asnData, f)
+                with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
                 if shutdown:
                     print("Shutting down gracefully...")
                     exit(0)
