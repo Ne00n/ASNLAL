@@ -4,18 +4,23 @@ import signal, json, time, os
 
 tools = Base()
 first, change, refresh, shutdown = True, False, 0, False
-path = os.path.dirname(os.path.realpath(__file__))
-with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 
 def gracefulExit(signal_number,stack_frame):
+    global shutdown
     systemd.daemon.notify('STOPPING=1')
     shutdown = True
+
+path = os.path.dirname(os.path.realpath(__file__))
+with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
 
 while True:
+    if shutdown:
+        print("Shutting down gracefully...")
+        exit(0)
     if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*24) < int(time.time()):
         print(f"Fetching bgp.tools/table.txt")
         success, req = tools.call("https://bgp.tools/table.txt")
@@ -83,6 +88,5 @@ while True:
                     asnData[prefix][subnet] = results
                     break
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
-            if shutdown: exit(0)
     print("Loop finished")
-    time.sleep(30)
+    time.sleep(10)
