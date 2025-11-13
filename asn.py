@@ -65,8 +65,6 @@ while True:
                     if not subnet in data:
                         print(f"Deleting {subnet} from {asn}")
                         del asnData[subnet]
-                print(asnData)
-                print(asn)
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
 
         files = os.listdir(f"{path}/data/")
