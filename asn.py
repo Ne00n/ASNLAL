@@ -35,9 +35,9 @@ while True:
         success, req = tools.call(config['asnSrc'])
         if success:
             config['asnList'] = req.json()
-            refresh = int(time.time()) + (60*60)
-        elif not success and first:
-            exit("Failed to fetch asn's")
+        elif not success:
+            print("Failed to fetch asn's")
+        refresh = int(time.time()) + (60*60)
 
         print("Updating sources")
         analyze = {}
