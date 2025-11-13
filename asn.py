@@ -3,7 +3,7 @@ import systemd.daemon
 import signal, json, time, os
 
 tools = Base()
-first, change, refresh, shutdown = True, False, 0, False
+refresh, shutdown = 0, False
 
 def gracefulExit(signal_number,stack_frame):
     global shutdown
@@ -26,7 +26,7 @@ while True:
         success, req = tools.call("https://bgp.tools/table.txt")
         if success:
             with open(f"{path}/src/table.txt", 'w') as file: file.write(req.text)
-            change = True
+            refresh = 0 #trigger refresh
         elif not success and not os.path.isfile(f"{path}/src/table.txt"): 
             exit("Failed to get table.txt")
 
@@ -39,9 +39,8 @@ while True:
         elif not success and first:
             exit("Failed to fetch asn's")
 
-    if  first or change:
         print("Updating sources")
-        analyze, first, change = {}, False, False
+        analyze = {}
         with open(f"{path}/src/table.txt") as file:
             for line in file:
                 line = line.rstrip()
@@ -49,7 +48,8 @@ while True:
                 if int(asn) in config['asnList']:
                     if not asn in analyze: analyze[asn] = {}
                     if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0}
-
+        
+        print("Updating local asn's")
         for asn, data in analyze.items():
             if not os.path.isfile(f"{path}/data/{asn}.json"):
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(data, f)
