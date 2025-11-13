@@ -88,8 +88,8 @@ while True:
                         asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
                         if not results: continue
                         if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
-                        asnData[prefix][subnet] = results
-                        if not "all" in details['settings']: break
+                        asnData[prefix][subnet] += results
+                        if not "any" in details['settings']: break
                 with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
                 if shutdown:
                     print("Shutting down gracefully...")
