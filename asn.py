@@ -30,13 +30,14 @@ while True:
         elif not success and not os.path.isfile(f"{path}/src/table.txt"): 
             exit("Failed to get table.txt")
 
-    if config['asnSrc'] and refresh < int(time.time()):
+    if refresh < int(time.time()):
         print("Updating asn's")
-        success, req = tools.call(config['asnSrc'])
-        if success:
-            config['asnList'] = req.json()
-        elif not success:
-            print("Failed to fetch asn's")
+        if config['asnSrc']:
+            success, req = tools.call(config['asnSrc'])
+            if success:
+                config['asnList'] = req.json()
+            elif not success:
+                print("Failed to fetch asn's")
         refresh = int(time.time()) + (60*60)
 
         print("Updating sources")
