@@ -91,6 +91,7 @@ while True:
                         asnData[prefix][subnet] += results
                         if not "any" in details['settings']: break
                 with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
+                with open(f"{path}/data/version.json", 'w') as f: json.dump({int(time.time())}, f)
                 if shutdown:
                     print("Shutting down gracefully...")
                     exit(0)
