@@ -1,6 +1,5 @@
+import multiprocessing, systemd.daemon, signal, json, time, os
 from Class.base import Base
-import systemd.daemon
-import signal, json, time, os
 
 tools = Base()
 refresh, shutdown = 0, False
@@ -68,6 +67,7 @@ while True:
                         del asnData[subnet]
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
 
+        subnets, mapping = [], {}
         files = os.listdir(f"{path}/data/")
         for file in files:
             if not file.endswith(".json") or "version.json" in file: continue
@@ -76,23 +76,35 @@ while True:
                 #ignore ipv6 for now
                 if "::" in prefix: continue
                 if details['updated'] > int(time.time()): continue
-                print(f"Analyzing {prefix}")
-                subnets = tools.splitTo24(prefix)
-                print(f"{prefix} splitted into {len(subnets)} subnet(s)")
-                for subnet in subnets:
-                    print(f"Trying to find pingable IPs in {subnet}")
-                    ips = tools.getIPs(subnet)
-                    for run in range(0, len(ips), 10):
-                        batch = ips[run+1:run+11]
-                        results = tools.fping(batch)
-                        asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
-                        if not results: continue
-                        if not subnet in asnData[prefix]: asnData[prefix][subnet] = []
-                        asnData[prefix][subnet] += results
-                        if not "any" in details['settings']: break
-                with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
-                with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
-                if shutdown:
-                    print("Shutting down gracefully...")
-                    exit(0)
+                tmpSubnets = tools.splitTo24(prefix)
+                for subnet in tmpSubnets: 
+                    subnets.append((subnet,details))
+                print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
+                for subnet in tmpSubnets: 
+                    mapping[subnet] = {"file":file,"prefix":prefix}
+
+        pool = multiprocessing.Pool(processes = 3)
+        results = pool.map(tools.processSubnet, subnets)
+        #wait for everything
+        pool.close()
+        pool.join()
+
+        toWrite = {}
+        for row in results:
+            for subnet,pings in row.items():
+                info = mapping[subnet]
+                if not info['file'] in toWrite: toWrite[info['file']] = {}
+                if not info['prefix'] in toWrite[info['file']]: toWrite[info['file']][info['prefix']] = []
+                toWrite[info['file']][info['prefix']].append((subnet,pings))
+            
+        for file, data in toWrite.items():
+            print(f"Writing file {file}")
+            with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
+            for prefix, subnets in data.items():
+                asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
+                for row in subnets:
+                    if not subnet in asnData[prefix]: asnData[prefix][row[0]] = []
+                    asnData[prefix][row[0]] += row[1]
+            with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
+            with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
     time.sleep(2)

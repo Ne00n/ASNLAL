@@ -48,3 +48,14 @@ class Base:
         result = self.cmd(fping)
         matches = self.fpingMatch.findall(result[1])
         return matches
+
+    def processSubnet(self,row):
+        subnet, details, results = row[0], row[1], []
+        ips = self.getIPs(subnet)
+        print(f"Running fping for {subnet}")
+        for run in range(0, len(ips), 10):
+            batch = ips[run+1:run+11]
+            results += self.fping(batch)
+            if not results: continue
+            if not "any" in details['settings']: break
+        return {subnet:results}
