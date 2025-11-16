@@ -83,7 +83,7 @@ while True:
                 for subnet in tmpSubnets: 
                     mapping[subnet] = {"file":file,"prefix":prefix}
 
-        pool = multiprocessing.Pool(processes = 3)
+        pool = multiprocessing.Pool(processes = 4)
         results = pool.map(tools.processSubnet, subnets)
         #wait for everything
         pool.close()
