@@ -50,11 +50,11 @@ class Base:
         return matches
 
     def processSubnet(self,row):
-        subnet, details, results = row[0], row[1], []
+        subnet, details, pingable, results = row[0], row[1], row[2], []
         ips = self.getIPs(subnet)
-        print(f"Running fping for {subnet}")
-        for run in range(0, len(ips), 10):
-            batch = ips[run+1:run+11]
+        print(f"Running fping for {subnet} at .{pingable[0]}")
+        for run in range(pingable[0], len(ips), 10):
+            batch = ips[run:run+10]
             results += self.fping(batch)
             if not results: continue
             if not "any" in details['settings']: break
