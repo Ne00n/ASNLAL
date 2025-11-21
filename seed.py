@@ -105,7 +105,8 @@ while True:
                                 if ip in subnet:
                                     if not str(subnet) in seed: seed[str(subnet)] = []
                                     if len(seed[str(subnet)]) > 10: break
-                                    seed[str(subnet)].append(str(ip))
+                                    seed[str(subnet)].append(int(str(ip).split(".")[-1]))
+                                    seed[str(subnet)].sort()
                 except Exception as e:
                     print(f"Failed to generate seeds: {e}")
                 finally:
