@@ -72,13 +72,17 @@ while True:
         for file in files:
             if not file.endswith(".json") or "version.json" in file: continue
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
+            success, req = tools.call(f"https://routing.serv.app/seeds/{file}")
+            if not success: continue
+            pingable = req.json()
             for prefix, details in asnData.items():
                 #ignore ipv6 for now
                 if "::" in prefix: continue
                 if details['updated'] > int(time.time()): continue
                 tmpSubnets = tools.splitTo24(prefix)
                 for subnet in tmpSubnets: 
-                    subnets.append((subnet,details))
+                    if not subnet in pingable: continue
+                    subnets.append((subnet,details,pingable[subnet]))
                 print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
                 for subnet in tmpSubnets: 
                     mapping[subnet] = {"file":file,"prefix":prefix}
