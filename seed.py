@@ -74,7 +74,6 @@ while True:
             if not file.endswith(".json") or "version.json" in file: continue
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
             prefixes = {}
-            if (len(asnData)) < 100: continue
             if os.path.isfile(f"{path}/seeds/{file}") and os.path.getmtime(f"{path}/seeds/{file}") + (60*60*24*7) > int(time.time()): 
                 print(f"Skipping {file}")
                 continue
