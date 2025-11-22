@@ -111,5 +111,6 @@ while True:
                 finally:
                     if os.path.exists(f"{path}/tmp.txt"): os.remove(f"{path}/tmp.txt")
             with open(f"{path}/seeds/{file}", 'w') as f: json.dump(seed, f)
+            with open(f"{path}/seeds/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
 
     time.sleep(2)
