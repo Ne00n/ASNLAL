@@ -89,6 +89,7 @@ while True:
                 #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
                 for subnet in tmpSubnets: 
                     mapping[subnet] = {"file":file,"prefix":prefix}
+            break
 
         pool = multiprocessing.Pool(processes = 4)
         results = pool.map(tools.processSubnet, subnets)
