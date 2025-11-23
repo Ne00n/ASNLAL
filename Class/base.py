@@ -52,7 +52,7 @@ class Base:
     def processSubnet(self,row):
         subnet, details, pingable, results = row[0], row[1], row[2], []
         ips = self.getIPs(subnet)
-        print(f"Running fping for {subnet} at .{pingable[0]}")
+        #print(f"Running fping for {subnet} at .{pingable[0]}")
         for run in range(pingable[0], len(ips), 10):
             batch = ips[run:run+10]
             results += self.fping(batch)
