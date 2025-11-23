@@ -95,7 +95,7 @@ while True:
 
         print(f"Running {file}")
         results, done, start = [], 0, int(time.time())
-        pool = multiprocessing.Pool(processes = 4)
+        pool = multiprocessing.Pool(processes = 5)
         for result in pool.imap_unordered(tools.processSubnet, subnets):
             results.append(result)
             done += 1
