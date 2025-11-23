@@ -42,7 +42,7 @@ class Base:
         except:
             return ["",""]
 
-    def fping(self,targets,pings=3):
+    def fping(self,targets,pings=1):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)
