@@ -94,13 +94,13 @@ while True:
             if subnets: break
 
         print(f"Running {file}")
-        results, done = [], 0
+        results, done, start = [], 0, int(time.time())
         pool = multiprocessing.Pool(processes = 4)
         for result in pool.imap_unordered(tools.processSubnet, subnets):
             results.append(result)
             done += 1
             if done % 10 == 0:
-                with open(f"{path}/data/status.json", 'w') as f: json.dump({"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+                with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
         #wait for everything
         pool.close()
         pool.join()
@@ -135,5 +135,5 @@ while True:
             refresh = int(time.time()) + (60*10)
         
         print(f"Loop done")
-        with open(f"{path}/data/status.json", 'w') as f: json.dump({"update":int(time.time()),"done":-1,"total":-1}, f)
+        with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":-1,"update":int(time.time()),"done":-1,"total":-1}, f)
     time.sleep(2)
