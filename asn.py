@@ -1,4 +1,4 @@
-import multiprocessing, systemd.daemon, signal, json, time, os
+import multiprocessing, systemd.daemon, hashlib, signal, json, time, os
 from Class.base import Base
 
 tools = Base()
@@ -70,7 +70,7 @@ while True:
         subnets, mapping = [], {}
         files = os.listdir(f"{path}/data/")
         for file in files:
-            if not file.endswith(".json") or "version.json" in file: continue
+            if not file.endswith(".json") or "version.json" in file or "status.json" in file: continue
             print(f"Loading {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
             success, req = tools.call(f"https://routing.serv.app/seeds/{file}")
@@ -122,7 +122,18 @@ while True:
                     if not subnet in asnData[prefix]: asnData[prefix][row[0]] = []
                     asnData[prefix][row[0]] += row[1]
             with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
-            with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
+            if os.path.isfile(f"{path}/data/version.json"):
+                with open(f"{path}/data/version.json") as handle: version =  json.loads(handle.read())
+                if not "files" in version: version["files"] = {}
+                if not file in version["files"]:  version["files"][file] = {}
+                version["files"][file]["version"] = int(time.time())
+                with open(f"{path}/data/{file}", 'rb', buffering=0) as f:
+                    version["files"][file]["sha256"] = hashlib.file_digest(f, 'sha256').hexdigest()
+                with open(f"{path}/data/version.json", 'w') as f: json.dump(version, f)
+            else:
+                with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
             refresh = int(time.time()) + (60*10)
+        
+        print(f"Loop done")
         with open(f"{path}/data/status.json", 'w') as f: json.dump({"update":int(time.time()),"done":-1,"total":-1}, f)
     time.sleep(2)
