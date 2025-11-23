@@ -123,6 +123,6 @@ while True:
                     asnData[prefix][row[0]] += row[1]
             with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
             with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
-            with open(f"{path}/data/status.json", 'w') as f: json.dump({"update":int(time.time()),"done":-1,"total":-1}, f)
             refresh = int(time.time()) + (60*10)
+        with open(f"{path}/data/status.json", 'w') as f: json.dump({"update":int(time.time()),"done":-1,"total":-1}, f)
     time.sleep(2)
