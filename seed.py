@@ -1,4 +1,4 @@
-import multiprocessing, systemd.daemon, signal, requests, json, time, os
+import multiprocessing, systemd.daemon, signal, requests, hashlib, json, time, os
 from ipaddress import ip_address, ip_network
 from Class.base import Base
 
@@ -77,7 +77,7 @@ while True:
             if os.path.isfile(f"{path}/seeds/{file}") and os.path.getmtime(f"{path}/seeds/{file}") + (60*60*24*7) > int(time.time()): 
                 print(f"Skipping {file}")
                 continue
-            print(f"Generating seed for {file}")
+            print(f"Generating seeds for {file}")
             for prefix, details in asnData.items():
                 if "::" in prefix: continue
                 firstOctet = prefix.split(".")[0]
@@ -96,21 +96,30 @@ while True:
                                 f.write(chunk)
     
                     subnetOjects = [ip_network(subnet) for subnet in blocks]
-                    print("Generating seeds")
                     with open(f"{path}/tmp.txt", 'r') as f:
                         for line in f:
                             ip = ip_address(line.strip())
                             for subnet in subnetOjects:
+                                if str(subnet) in seed and len(seed[str(subnet)]) > 10: continue
                                 if ip in subnet:
                                     if not str(subnet) in seed: seed[str(subnet)] = []
-                                    if len(seed[str(subnet)]) > 10: break
                                     seed[str(subnet)].append(int(str(ip).split(".")[-1]))
                                     seed[str(subnet)].sort()
                 except Exception as e:
                     print(f"Failed to generate seeds: {e}")
                 finally:
                     if os.path.exists(f"{path}/tmp.txt"): os.remove(f"{path}/tmp.txt")
+            print(f"Saving seeds for {file}")
             with open(f"{path}/seeds/{file}", 'w') as f: json.dump(seed, f)
-            with open(f"{path}/seeds/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
+            if os.path.isfile(f"{path}/seeds/version.json"):
+                with open(f"{path}/seeds/version.json") as handle: version =  json.loads(handle.read())
+                if not "files" in version: version["files"] = {}
+                if not file in version["files"]:  version["files"][file] = {}
+                version["files"][file]["version"] = int(time.time())
+                with open(f"{path}/seeds/{file}", 'rb', buffering=0) as f:
+                    version["files"][file]["sha256"] = hashlib.file_digest(f, 'sha256').hexdigest()
+                with open(f"{path}/seeds/version.json", 'w') as f: json.dump(version, f)
+            else:
+                with open(f"{path}/seeds/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
 
     time.sleep(2)
