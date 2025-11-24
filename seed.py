@@ -1,8 +1,6 @@
 import multiprocessing, systemd.daemon, signal, requests, hashlib, json, time, os
-from ipaddress import ip_address, ip_network
 from Class.base import Base
 
-tools = Base()
 refresh, shutdown = 0, False
 
 def gracefulExit(signal_number,stack_frame):
@@ -12,6 +10,7 @@ def gracefulExit(signal_number,stack_frame):
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+tools = Base(path)
 
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
@@ -85,30 +84,12 @@ while True:
                 tmpSubnets = tools.splitTo24(prefix)
                 for subnet in tmpSubnets: 
                     prefixes[firstOctet].append(subnet)
+
             seed = {}
-            for firstOctet, blocks in prefixes.items():
-                try:
-                    print(f"Downloading file https://data.serv.app/files/{firstOctet}.txt")
-                    with requests.get(f"https://data.serv.app/files/{firstOctet}.txt", stream=True) as response:
-                        response.raise_for_status()
-                        with open(f"{path}/tmp.txt", 'wb') as f:
-                            for chunk in response.iter_content(chunk_size=8192):
-                                f.write(chunk)
-    
-                    subnetOjects = [ip_network(subnet) for subnet in blocks]
-                    with open(f"{path}/tmp.txt", 'r') as f:
-                        for line in f:
-                            ip = ip_address(line.strip())
-                            for subnet in subnetOjects:
-                                if str(subnet) in seed and len(seed[str(subnet)]) > 10: continue
-                                if ip in subnet:
-                                    if not str(subnet) in seed: seed[str(subnet)] = []
-                                    seed[str(subnet)].append(int(str(ip).split(".")[-1]))
-                                    seed[str(subnet)].sort()
-                except Exception as e:
-                    print(f"Failed to generate seeds: {e}")
-                finally:
-                    if os.path.exists(f"{path}/tmp.txt"): os.remove(f"{path}/tmp.txt")
+            with multiprocessing.Pool(processes=2) as pool:
+                results = pool.starmap(tools.processOctet, enumerate(prefixes.items()))
+            for result in results:
+                seed.update(result)
             print(f"Saving seeds for {file}")
             with open(f"{path}/seeds/{file}", 'w') as f: json.dump(seed, f)
             if os.path.isfile(f"{path}/seeds/version.json"):

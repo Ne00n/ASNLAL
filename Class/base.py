@@ -1,9 +1,11 @@
-import ipaddress, subprocess, requests, time, re
+import ipaddress, subprocess, requests, time, re, os
+from ipaddress import ip_address, ip_network
 
 class Base:
 
-    def __init__(self):
+    def __init__(self,path):
         self.fpingMatch = re.compile(r'(\d+\.\d+\.\d+\.\d+)\s+:.*?min/avg/max\s+=\s+[\d.]+/([\d.]+)/')
+        self.path = path
 
     def call(self,url,method="GET",payload={},headers={},max=5):
         if not headers: headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'}
@@ -59,3 +61,29 @@ class Base:
             if not results: continue
             if not "any" in details['settings']: break
         return {subnet:results}
+
+    def processOctet(self,taskID,block):
+        seed = {}
+        try:
+            print(f"Downloading file https://data.serv.app/files/{block[0]}.txt")
+            with requests.get(f"https://data.serv.app/files/{block[0]}.txt", stream=True) as response:
+                response.raise_for_status()
+                with open(f"{self.path}/{block[0]}.txt", 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            subnetOjects = [ip_network(subnet) for subnet in block[1]]
+            with open(f"{self.path}/{block[0]}.txt", 'r') as f:
+                for line in f:
+                    ip = ip_address(line.strip())
+                    for subnet in subnetOjects:
+                        if str(subnet) in seed and len(seed[str(subnet)]) > 10: continue
+                        if ip in subnet:
+                            if not str(subnet) in seed: seed[str(subnet)] = []
+                            seed[str(subnet)].append(int(str(ip).split(".")[-1]))
+                            seed[str(subnet)].sort()
+        except Exception as e:
+            print(f"Failed to generate seeds: {e}")
+        finally:
+            if os.path.exists(f"{self.path}/{block[0]}.txt"): os.remove(f"{self.path}/{block[0]}.txt")
+            return seed
