@@ -85,8 +85,8 @@ while True:
                 for subnet in tmpSubnets: 
                     prefixes[firstOctet].append(subnet)
 
-            seed = {}
-            with multiprocessing.Pool(processes=2) as pool:
+            seed, cores = {}, os.sched_getaffinity(0) -1
+            with multiprocessing.Pool(processes=cores) as pool:
                 results = pool.starmap(tools.processOctet, enumerate(prefixes.items()))
             for result in results:
                 seed.update(result)
