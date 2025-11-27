@@ -1,7 +1,6 @@
 import multiprocessing, systemd.daemon, hashlib, signal, json, time, os
 from Class.base import Base
 
-tools = Base()
 refresh, shutdown = 0, False
 
 def gracefulExit(signal_number,stack_frame):
@@ -11,6 +10,7 @@ def gracefulExit(signal_number,stack_frame):
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+tools = Base(path)
 
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
