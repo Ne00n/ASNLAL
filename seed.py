@@ -27,8 +27,8 @@ def processOctet(prefix,subnets):
         print(f"Sorting for {len(subnets)} subnets")
         for subnet in subnetOjects:
             print(f"Sorting for {subnet}")
-            if str(subnet) in seed and len(seed[str(subnet)]) > 3: continue
             for ip in ips:
+                if str(subnet) in seed and len(seed[str(subnet)]) > 3: continue
                 ip = ip_address(ip)
                 if ip in subnet:
                     if not str(subnet) in seed: seed[str(subnet)] = []
