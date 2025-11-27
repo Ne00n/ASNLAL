@@ -1,4 +1,5 @@
 import multiprocessing, systemd.daemon, signal, requests, hashlib, json, time, os
+from ipaddress import ip_address, ip_network
 from Class.base import Base
 
 refresh, shutdown = 0, False
@@ -7,6 +8,36 @@ def gracefulExit(signal_number,stack_frame):
     global shutdown
     systemd.daemon.notify('STOPPING=1')
     shutdown = True
+
+def initWorker(ips):
+    global sharedIPs
+    sharedIPs = ips
+
+def processOctet(prefix,subnets): 
+    global sharedIPs       
+    seed = {}
+    try:
+        subnetOjects, ips = [ip_network(subnet) for subnet in [prefix]], []
+        print(f"Presorting for {prefix}")
+        for subnet in subnetOjects:
+            for ip in sharedIPs:
+                ip = ip_address(ip)
+                if ip in subnet: ips.append(ip)
+        subnetOjects = [ip_network(subnet) for subnet in subnets]
+        print(f"Sorting for {len(subnets)} subnets")
+        for subnet in subnetOjects:
+            print(f"Sorting for {subnet}")
+            if str(subnet) in seed and len(seed[str(subnet)]) > 10: continue
+            for ip in ips:
+                ip = ip_address(ip)
+                if ip in subnet:
+                    if not str(subnet) in seed: seed[str(subnet)] = []
+                    seed[str(subnet)].append(int(str(ip).split(".")[-1]))
+                    seed[str(subnet)].sort()
+    except Exception as e:
+        print(f"Failed to generate seeds: {e}")
+    finally:
+        return seed
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
@@ -80,16 +111,21 @@ while True:
             for prefix, details in asnData.items():
                 if "::" in prefix: continue
                 firstOctet = prefix.split(".")[0]
-                if firstOctet != "34": continue
                 if not firstOctet in prefixes: prefixes[firstOctet] = []
                 tmpSubnets = tools.splitTo24(prefix)
-                prefixes[firstOctet].append({prefix:tmpSubnets})
+                prefixes[firstOctet].append([prefix,tmpSubnets])
 
             seed, cores = {}, int(len(os.sched_getaffinity(0))) -1
-            with multiprocessing.Pool(processes=cores) as pool:
-                results = pool.starmap(tools.processOctet, enumerate(prefixes.items()))
-            for result in results:
-                seed.update(result)
+            for firstOctet, segment in prefixes.items():
+                print(f"Downloading file https://data.serv.app/files/{firstOctet}.txt")
+                success, req = tools.call(f"https://data.serv.app/files/{firstOctet}.txt")
+                if not success: continue
+                ips = req.text.splitlines()
+
+                with multiprocessing.Pool(processes=cores, initializer=initWorker, initargs=(ips,)) as pool:
+                    results = pool.starmap(processOctet, prefixes[firstOctet])
+                for result in results:
+                    seed.update(result)
             print(f"Saving seeds for {file}")
             with open(f"{path}/seeds/{file}", 'w') as f: json.dump(seed, f)
             if os.path.isfile(f"{path}/seeds/version.json"):
