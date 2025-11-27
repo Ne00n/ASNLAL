@@ -62,7 +62,7 @@ class Base:
             if not "any" in details['settings']: break
         return {subnet:results}
 
-    def processOctet(self,taskID,block):
+    def processOctet(self,taskID,block):        
         seed = {}
         try:
             print(f"Downloading file https://data.serv.app/files/{block[0]}.txt")
@@ -72,16 +72,28 @@ class Base:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
 
-            subnetOjects = [ip_network(subnet) for subnet in block[1]]
             with open(f"{self.path}/{block[0]}.txt", 'r') as f:
-                for line in f:
-                    ip = ip_address(line.strip())
+                lines = f.read()
+
+            for row in block[1]:
+                for prefix, subnets in row.items():
+                    subnetOjects, ips = [ip_network(subnet) for subnet in [prefix]], []
+                    print(f"Presorting for {prefix}")
                     for subnet in subnetOjects:
+                        for line in lines.splitlines():
+                            ip = ip_address(line.strip())
+                            if ip in subnet: ips.append(ip)
+                    subnetOjects = [ip_network(subnet) for subnet in subnets]
+                    print(f"Sorting for {len(subnets)} subnets")
+                    for subnet in subnetOjects:
+                        print(f"Sorting for {subnet}")
                         if str(subnet) in seed and len(seed[str(subnet)]) > 10: continue
-                        if ip in subnet:
-                            if not str(subnet) in seed: seed[str(subnet)] = []
-                            seed[str(subnet)].append(int(str(ip).split(".")[-1]))
-                            seed[str(subnet)].sort()
+                        for ip in ips:
+                            ip = ip_address(ip)
+                            if ip in subnet:
+                                if not str(subnet) in seed: seed[str(subnet)] = []
+                                seed[str(subnet)].append(int(str(ip).split(".")[-1]))
+                                seed[str(subnet)].sort()
         except Exception as e:
             print(f"Failed to generate seeds: {e}")
         finally:
