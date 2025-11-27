@@ -80,10 +80,10 @@ while True:
             for prefix, details in asnData.items():
                 if "::" in prefix: continue
                 firstOctet = prefix.split(".")[0]
+                if firstOctet != "34": continue
                 if not firstOctet in prefixes: prefixes[firstOctet] = []
                 tmpSubnets = tools.splitTo24(prefix)
-                for subnet in tmpSubnets: 
-                    prefixes[firstOctet].append(subnet)
+                prefixes[firstOctet].append({prefix:tmpSubnets})
 
             seed, cores = {}, int(len(os.sched_getaffinity(0))) -1
             with multiprocessing.Pool(processes=cores) as pool:
