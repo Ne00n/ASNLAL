@@ -1,4 +1,4 @@
-import multiprocessing, systemd.daemon, hashlib, signal, json, time, os
+import multiprocessing as mp, systemd.daemon, hashlib, signal, json, time, os
 from Class.base import Base
 
 refresh, shutdown = 0, False
@@ -7,6 +7,14 @@ def gracefulExit(signal_number,stack_frame):
     global shutdown
     systemd.daemon.notify('STOPPING=1')
     shutdown = True
+
+def initWorker(shared_subnets):
+    global subnets
+    _subnets = shared_subnets
+
+def sliceWorker(index):
+    subnet = subnets[index]
+    return tools.processSubnet(subnet)
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
@@ -95,12 +103,12 @@ while True:
 
         print(f"Running {file}")
         results, done, start = [], 0, int(time.time())
-        pool = multiprocessing.Pool(processes = 2)
-        for result in pool.imap_unordered(tools.processSubnet, subnets):
-            results.append(result)
-            done += 1
-            if done % 10 == 0:
-                with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+        with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),) as pool:
+            for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
+                results.append(result)
+                done += 1
+                if done % 10 == 0:
+                    with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
         #wait for everything
         pool.close()
         pool.join()
