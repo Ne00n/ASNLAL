@@ -15,7 +15,8 @@ def initWorker(subnets):
 def sliceWorker(index):
     global sharedSubnets
     subnet = sharedSubnets[index]
-    return tools.processSubnet(subnet)
+    workerTools = Base(path)
+    return workerTools.processSubnet(subnet)
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
