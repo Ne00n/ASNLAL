@@ -128,9 +128,10 @@ while True:
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
             for prefix, subnets in data.items():
                 asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
+                if not "subnets" in asnData[prefix]: asnData[prefix]['data'] = {}
                 for row in subnets:
-                    if not subnet in asnData[prefix]: asnData[prefix][row[0]] = []
-                    asnData[prefix][row[0]] += row[1]
+                    if not subnet in asnData[prefix]['data']: asnData[prefix]['data'][row[0]] = []
+                    asnData[prefix]['data'][row[0]] += row[1]
             with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
             if os.path.isfile(f"{path}/data/version.json"):
                 with open(f"{path}/data/version.json") as handle: version =  json.loads(handle.read())
