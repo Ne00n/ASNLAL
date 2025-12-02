@@ -8,12 +8,13 @@ def gracefulExit(signal_number,stack_frame):
     systemd.daemon.notify('STOPPING=1')
     shutdown = True
 
-def initWorker(shared_subnets):
-    global subnets
-    _subnets = shared_subnets
+def initWorker(subnets):
+    global sharedSubnets
+    sharedSubnets = subnets
 
 def sliceWorker(index):
-    subnet = subnets[index]
+    global sharedSubnets
+    subnet = sharedSubnets[index]
     return tools.processSubnet(subnet)
 
 path = os.path.dirname(os.path.realpath(__file__))
