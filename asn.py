@@ -105,7 +105,7 @@ while True:
 
         print(f"Running {file}")
         results, done, start = [], 0, int(time.time())
-        with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),) as pool:
+        with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),maxtasksperchild=1000,) as pool:
             for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
                 results.append(result)
                 done += 1
@@ -122,7 +122,8 @@ while True:
                 if not info['file'] in toWrite: toWrite[info['file']] = {}
                 if not info['prefix'] in toWrite[info['file']]: toWrite[info['file']][info['prefix']] = []
                 toWrite[info['file']][info['prefix']].append((subnet,pings))
-            
+        
+        results = []
         for file, data in toWrite.items():
             print(f"Writing file {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
@@ -145,6 +146,7 @@ while True:
                 with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
             refresh = int(time.time()) + (60*10)
         
+        toWrite = {}
         print(f"Loop done")
         with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":-1,"update":int(time.time()),"done":-1,"total":-1}, f)
     time.sleep(2)
