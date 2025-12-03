@@ -54,8 +54,10 @@ class Base:
     def processSubnet(self,data):
         results = []
         ips = self.getIPs(data['subnet'])
-        for run in range(data['pingable'][0], len(ips), 10):
-            batch = ips[run:run+10]
+        targets = [ips[i] for i in data['pingable'] if i < len(ips)]
+
+        for i in range(0, len(targets), 10):
+            batch = targets[i:i+10]
             result = self.fping(batch)
             if not result: continue
             for row in result:
