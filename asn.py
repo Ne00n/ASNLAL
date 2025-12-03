@@ -1,4 +1,4 @@
-import concurrent.futures, systemd.daemon, hashlib, signal, json, time, os
+import multiprocessing as mp, systemd.daemon, hashlib, signal, json, time, os
 from Class.base import Base
 
 refresh, shutdown = 0, False
@@ -8,7 +8,13 @@ def gracefulExit(signal_number,stack_frame):
     systemd.daemon.notify('STOPPING=1')
     shutdown = True
 
-def sliceWorker(subnet):
+def initWorker(subnets):
+    global sharedSubnets
+    sharedSubnets = subnets
+
+def sliceWorker(index):
+    global sharedSubnets
+    subnet = sharedSubnets[index]
     workerTools = Base(path)
     return workerTools.processSubnet(subnet)
 
@@ -99,13 +105,15 @@ while True:
 
         print(f"Running {file}")
         results, done, start = [], 0, int(time.time())
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(sliceWorker, subnet) for subnet in subnets]
-            for future in concurrent.futures.as_completed(futures):
-                results.append(future.result())
+        with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),) as pool:
+            for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
+                results.append(result)
                 done += 1
                 if done % 10 == 0:
                     with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+        #wait for everything
+        pool.close()
+        pool.join()
 
         toWrite = {}
         for row in results:
