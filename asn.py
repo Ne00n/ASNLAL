@@ -104,26 +104,31 @@ while True:
             if subnets: break
 
         print(f"Running {file}")
-        results, done, start = [], 0, int(time.time())
+        done, start = 0, int(time.time())
+        if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
         with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),maxtasksperchild=1000,) as pool:
-            for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
-                results.append(result)
-                done += 1
-                if done % 10 == 0:
-                    with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+            with open(f"{path}/results.jsonl", 'a') as writer:
+                for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
+                    writer.write(json.dumps(result) + '\n')
+                    done += 1
+                    if done % 10 == 0:
+                        with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
         #wait for everything
         pool.close()
         pool.join()
 
         toWrite = {}
-        for row in results:
-            for subnet,pings in row.items():
-                info = mapping[subnet]
-                if not info['file'] in toWrite: toWrite[info['file']] = {}
-                if not info['prefix'] in toWrite[info['file']]: toWrite[info['file']][info['prefix']] = []
-                toWrite[info['file']][info['prefix']].append((subnet,pings))
+        with open(f"{path}/results.jsonl", 'r') as results:
+            for line in results:
+                row = json.loads(line)
+                for subnet,pings in row.items():
+                    info = mapping[subnet]
+                    if not info['file'] in toWrite: toWrite[info['file']] = {}
+                    if not info['prefix'] in toWrite[info['file']]: toWrite[info['file']][info['prefix']] = []
+                    toWrite[info['file']][info['prefix']].append((subnet,pings))
         
-        results = []
+        if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
+        
         for file, data in toWrite.items():
             print(f"Writing file {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
