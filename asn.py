@@ -21,7 +21,6 @@ def sliceWorker(index):
         return workerTools.processSubnet(data)
     except Exception as e:
         print(f"Error processing subnet {data['subnet']} on index {index}: {e}")
-        return {data['subnet']: []}
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
