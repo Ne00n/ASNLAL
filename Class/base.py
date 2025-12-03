@@ -51,14 +51,14 @@ class Base:
         matches = self.fpingMatch.findall(result[1])
         return matches
 
-    def processSubnet(self,row):
-        subnet, details, pingable, results = row[0], row[1], row[2], []
-        ips = self.getIPs(subnet)
-        for run in range(pingable[0], len(ips), 10):
+    def processSubnet(self,data):
+        results = []
+        ips = self.getIPs(data['subnet'])
+        for run in range(data['pingable'][0], len(ips), 10):
             batch = ips[run:run+10]
             result = self.fping(batch)
             if not result: continue
             for row in result:
                 results.append([row[0].split(".")[-1],float(row[1])])
-            if not "any" in details['settings']: break
-        return {subnet:results}
+            if not "any" in data['details']['settings']: break
+        return {data['subnet']:results}

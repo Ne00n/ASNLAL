@@ -14,11 +14,10 @@ def initWorker(subnets):
 
 def sliceWorker(index):
     global sharedSubnets
-    subnet = sharedSubnets[index]
-    print(f"Processing {subnet} on index {index}")
+    data = sharedSubnets[index]
+    print(f"Processing {data['subnet']} on index {index}")
     workerTools = Base(path)
-    #return workerTools.processSubnet(subnet)
-    return {subnet: "processed"}
+    return workerTools.processSubnet(data)
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
@@ -97,7 +96,7 @@ while True:
                     if not subnet in pingable: 
                         #print(f"Skipping {subnet}, not pingable")
                         continue
-                    subnets.append((subnet,details,pingable[subnet]))
+                    subnets.append({"subnet":subnet,"details":details,"pingable":pingable[subnet]})
                 #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
                 for subnet in tmpSubnets: 
                     mapping[subnet] = {"file":file,"prefix":prefix}
