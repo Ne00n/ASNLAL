@@ -14,9 +14,9 @@ def initWorker(subnets):
 
 def sliceWorker(index):
     global sharedSubnets
-    data = sharedSubnets[index]
-    print(f"Processing {data['subnet']} on index {index}")
     try:
+        data = sharedSubnets[index]
+        print(f"Processing {data['subnet']} on index {index}")
         workerTools = Base(path)
         return workerTools.processSubnet(data)
     except Exception as e:
