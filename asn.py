@@ -15,8 +15,10 @@ def initWorker(subnets):
 def sliceWorker(index):
     global sharedSubnets
     subnet = sharedSubnets[index]
+    print(f"Processing {subnet} on index {index}")
     workerTools = Base(path)
-    return workerTools.processSubnet(subnet)
+    #return workerTools.processSubnet(subnet)
+    return {subnet: "processed"}
 
 path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
@@ -103,7 +105,7 @@ while True:
             #do one file at a time
             if subnets: break
 
-        print(f"Running {file}")
+        print(f"Running {file} with {len(subnets)} subnets")
         done, start = 0, int(time.time())
         if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
         with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),maxtasksperchild=1000,) as pool:
