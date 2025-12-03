@@ -58,7 +58,7 @@ while True:
                 for selectedASN, settings in config['asnList'].items():
                     if int(asn) == int(selectedASN):
                         if not asn in analyze: analyze[asn] = {}
-                        if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0,"settings":settings}
+                        if not prefix in analyze[asn]: analyze[asn][prefix] = {"created":int(time.time()),"updated":0,"settings":settings,"data":{}}
                         break
         
         print("Updating local asn's")
@@ -128,7 +128,7 @@ while True:
                     toWrite[info['file']][info['prefix']].append((subnet,pings))
         
         if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
-        
+
         for file, data in toWrite.items():
             print(f"Writing file {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
