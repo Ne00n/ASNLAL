@@ -118,6 +118,9 @@ while True:
                     done += 1
                     if done % 10 == 0:
                         with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+        #wait for everything
+        pool.close()
+        pool.join()
 
         toWrite = {}
         with open(f"{path}/results.jsonl", 'r') as results:
