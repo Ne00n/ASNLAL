@@ -46,8 +46,8 @@ while True:
 
     if refresh < int(time.time()):
         print("Updating asn's")
-        if config['asnSrc']:
-            success, req = tools.call(config['asnSrc'])
+        if config['dataSrc']:
+            success, req = tools.call(f"{config['dataSrc']}/asn.json")
             if success:
                 config['asnList'] = req.json()
             elif not success:
@@ -88,7 +88,7 @@ while True:
             if not file.endswith(".json") or "version.json" in file or "status.json" in file: continue
             print(f"Loading {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
-            success, req = tools.call(f"https://routing.serv.app/seeds/{file}")
+            success, req = tools.call(f"{config['dataSrc']}/seeds/{file}")
             if not success: continue
             pingable = req.json()
             for prefix, details in asnData.items():
