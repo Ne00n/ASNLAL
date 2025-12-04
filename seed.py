@@ -62,8 +62,8 @@ while True:
 
     if refresh < int(time.time()):
         print("Updating asn's")
-        if config['asnSrc']:
-            success, req = tools.call(config['asnSrc'])
+        if config['dataSrc']:
+            success, req = tools.call(f"{config['dataSrc']}/asn.json")
             if success:
                 config['asnList'] = req.json()
             elif not success:
