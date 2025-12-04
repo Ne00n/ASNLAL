@@ -27,6 +27,10 @@ path = os.path.dirname(os.path.realpath(__file__))
 with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 tools = Base(path)
 
+if "asnSrc" in config and not "dataSrc" in config:
+    config['dataSrc'] = config['asnSrc']
+    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f, indent=2)
+
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
