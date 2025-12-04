@@ -13,7 +13,7 @@ def initWorker(ips):
     global sharedIPs
     sharedIPs = ips
 
-def processOctet(prefix,subnets): 
+def processOctet(prefix,subnets,details): 
     global sharedIPs       
     seed = {}
     try:
@@ -28,7 +28,7 @@ def processOctet(prefix,subnets):
         for subnet in subnetOjects:
             print(f"Sorting for {subnet}")
             for ip in ips:
-                if str(subnet) in seed and len(seed[str(subnet)]) > 3: continue
+                if str(subnet) in seed and len(seed[str(subnet)]) > 3 and not "any" in details: continue
                 ip = ip_address(ip)
                 if ip in subnet:
                     if not str(subnet) in seed: seed[str(subnet)] = []
@@ -101,7 +101,7 @@ while True:
         files = os.listdir(f"{path}/data/")
         print("Checking seeds")
         for file in files:
-            if not file.endswith(".json") or "version.json" in file: continue
+            if not file.endswith(".json") or "version.json" in file or "status.json" in file: continue
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
             prefixes = {}
             if os.path.isfile(f"{path}/seeds/{file}") and os.path.getmtime(f"{path}/seeds/{file}") + (60*60*24*7) > int(time.time()): 
@@ -113,7 +113,7 @@ while True:
                 firstOctet = prefix.split(".")[0]
                 if not firstOctet in prefixes: prefixes[firstOctet] = []
                 tmpSubnets = tools.splitTo24(prefix)
-                prefixes[firstOctet].append([prefix,tmpSubnets])
+                prefixes[firstOctet].append([prefix,tmpSubnets,details])
 
             seed, cores = {}, int(len(os.sched_getaffinity(0))) -1
             for firstOctet, segment in prefixes.items():
