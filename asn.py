@@ -1,4 +1,4 @@
-import multiprocessing as mp, systemd.daemon, hashlib, signal, json, time, os
+import multiprocessing as mp, systemd.daemon, hashlib, random, signal, json, time, os
 from Class.base import Base
 
 refresh, shutdown = 0, False
@@ -142,7 +142,8 @@ while True:
             print(f"Writing file {file}")
             with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
             for prefix, subnets in data.items():
-                asnData[prefix]['updated'] = int(time.time()) + (60*60*24*7)
+                days, hours = random.randint(6, 7), random.randint(22,24)
+                asnData[prefix]['updated'] = int(time.time()) + (60*60*hours*days)
                 if not "subnets" in asnData[prefix]: asnData[prefix]['data'] = {}
                 for row in subnets:
                     if not subnet in asnData[prefix]['data']: asnData[prefix]['data'][row[0]] = []
