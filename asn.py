@@ -111,16 +111,20 @@ while True:
         print(f"Running {file} with {len(subnets)} subnets")
         done, start = 0, int(time.time())
         if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
-        with mp.Pool(processes=4,initializer=initWorker,initargs=(subnets,),maxtasksperchild=1000,) as pool:
+        pool = mp.Pool(processes=4, initializer=initWorker, initargs=(subnets,), maxtasksperchild=1000)
+        try:
             with open(f"{path}/results.jsonl", 'a') as writer:
-                for result in pool.imap_unordered(sliceWorker, range(len(subnets))):
-                    writer.write(json.dumps(result) + '\n')
+                for result in pool.imap_unordered(sliceWorker, range(len(subnets)), chunksize=1):
+                    if result is not None:
+                        writer.write(json.dumps(result) + '\n')
                     done += 1
                     if done % 10 == 0:
-                        with open(f"{path}/data/status.json", 'w') as f: json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
-        #wait for everything
-        pool.close()
-        pool.join()
+                        with open(f"{path}/data/status.json", 'w') as f: 
+                            json.dump({"start":start,"update":int(time.time()),"done":done,"total":len(subnets)}, f)
+        finally:
+            pool.close()
+            pool.join()
+            pool.terminate()
 
         toWrite = {}
         with open(f"{path}/results.jsonl", 'r') as results:
