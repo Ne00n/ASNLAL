@@ -28,7 +28,7 @@ with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.rea
 tools = Base(path)
 
 if "asnSrc" in config and not "dataSrc" in config:
-    config['dataSrc'] = config['asnSrc']
+    config['dataSrc'] = config['asnSrc'].replace("/asn.json","")
     with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f, indent=2)
 
 signal.signal(signal.SIGINT, gracefulExit)
