@@ -86,7 +86,7 @@ while True:
                         del asnData[subnet]
                 with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnData, f)
 
-        subnets, mapping = [], {}
+        subnets, mapping, analyze = [], {}, {}
         files = os.listdir(f"{path}/data/")
         for file in files:
             if not file.endswith(".json") or "version.json" in file or "status.json" in file: continue
