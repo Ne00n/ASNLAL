@@ -140,6 +140,7 @@ while True:
                     if not info['prefix'] in toWrite[info['file']]: toWrite[info['file']][info['prefix']] = []
                     toWrite[info['file']][info['prefix']].append((subnet,pings))
         
+        mapping = []
         if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
 
         for file, data in toWrite.items():
