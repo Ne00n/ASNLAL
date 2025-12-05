@@ -130,7 +130,7 @@ while True:
             pool.join()
             pool.terminate()
 
-        toWrite = {}
+        toWrite, subnets = {}, {}
         with open(f"{path}/results.jsonl", 'r') as results:
             for line in results:
                 row = json.loads(line)
