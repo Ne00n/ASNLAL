@@ -34,12 +34,13 @@ if "asnSrc" in config and not "dataSrc" in config:
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
+files = os.listdir(f"{path}/data/")
 
 while True:
     if shutdown:
         print("Shutting down gracefully...")
         exit(0)
-        
+
     if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*12) < int(time.time()):
         print(f"Fetching bgp.tools/table.txt")
         success, req = tools.call("https://bgp.tools/table.txt")
@@ -55,6 +56,11 @@ while True:
             success, req = tools.call(f"{config['dataSrc']}/asn.json")
             if success:
                 config['asnList'] = req.json()
+                for asn in config['asnList']:
+                    if f"{asn}.json" not in files:
+                        print(f"{asn} doesn't exist locally, triggering update.")
+                        tableUpdated = True
+                        break
             elif not success:
                 print("Failed to fetch asn's")
         refresh = int(time.time()) + (60*60)
