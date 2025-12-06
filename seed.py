@@ -2,7 +2,7 @@ import multiprocessing, systemd.daemon, signal, requests, hashlib, json, time, o
 from ipaddress import ip_address, ip_network
 from Class.base import Base
 
-refresh, shutdown, tableUpdated = 0, False, False
+refresh, shutdown, tableUpdated = 0, False, True
 
 def gracefulExit(signal_number,stack_frame):
     global shutdown
