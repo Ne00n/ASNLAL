@@ -1,7 +1,7 @@
 import multiprocessing as mp, systemd.daemon, hashlib, random, signal, json, time, os
 from Class.base import Base
 
-shutdown, tableUpdated = False, False
+refresh, shutdown, tableUpdated = 0, False, False
 
 def gracefulExit(signal_number,stack_frame):
     global shutdown
@@ -39,6 +39,7 @@ while True:
     if shutdown:
         print("Shutting down gracefully...")
         exit(0)
+        
     if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*12) < int(time.time()):
         print(f"Fetching bgp.tools/table.txt")
         success, req = tools.call("https://bgp.tools/table.txt")
@@ -48,8 +49,7 @@ while True:
         elif not success and not os.path.isfile(f"{path}/src/table.txt"): 
             exit("Failed to get table.txt")
 
-    if tableUpdated:
-        tableUpdated = False
+    if refresh < int(time.time()):
         print("Updating asn's")
         if config['dataSrc']:
             success, req = tools.call(f"{config['dataSrc']}/asn.json")
@@ -57,7 +57,10 @@ while True:
                 config['asnList'] = req.json()
             elif not success:
                 print("Failed to fetch asn's")
+        refresh = int(time.time()) + (60*60)
 
+    if tableUpdated:
+        tableUpdated = False
         print("Updating sources")
         analyze = {}
         with open(f"{path}/src/table.txt") as file:
