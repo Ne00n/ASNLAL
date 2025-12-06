@@ -39,7 +39,7 @@ while True:
     if shutdown:
         print("Shutting down gracefully...")
         exit(0)
-    if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*24) < int(time.time()):
+    if not os.path.isfile(f"{path}/src/table.txt") or os.path.getmtime(f"{path}/src/table.txt") + (60*60*12) < int(time.time()):
         print(f"Fetching bgp.tools/table.txt")
         success, req = tools.call("https://bgp.tools/table.txt")
         if success:
