@@ -164,6 +164,7 @@ while True:
                 with open(f"{path}/data/version.json", 'w') as f: json.dump(version, f)
             else:
                 with open(f"{path}/data/version.json", 'w') as f: json.dump({"version":int(time.time())}, f)
+            tableUpdated = True
         
         toWrite = {}
         print(f"Loop done")
