@@ -63,7 +63,7 @@ while True:
                         break
             elif not success:
                 print("Failed to fetch asn's")
-        refresh = int(time.time()) + (60*60)
+        refresh = int(time.time()) + (60*30)
 
     if tableUpdated:
         tableUpdated = False
