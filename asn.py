@@ -1,7 +1,7 @@
 import multiprocessing as mp, systemd.daemon, hashlib, random, signal, json, time, os
 from Class.base import Base
 
-refresh, shutdown, tableUpdated = 0, False, False
+refresh, shutdown, tableUpdated = 0, False, True
 
 def gracefulExit(signal_number,stack_frame):
     global shutdown
@@ -111,9 +111,9 @@ while True:
                 tmpSubnets = tools.splitTo24(prefix)
                 for subnet in tmpSubnets: 
                     if not subnet in pingable: 
-                        #print(f"Skipping {subnet}, not pingable")
-                        continue
-                    subnets.append({"subnet":subnet,"details":details,"pingable":pingable[subnet]})
+                        subnets.append({"subnet":subnet,"details":details,"pingable":[]})
+                    else:
+                        subnets.append({"subnet":subnet,"details":details,"pingable":pingable[subnet]})
                 #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
                 for subnet in tmpSubnets: 
                     mapping[subnet] = {"file":file,"prefix":prefix}

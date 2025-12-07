@@ -54,6 +54,7 @@ class Base:
     def processSubnet(self,data):
         results = []
         ips = self.getIPs(data['subnet'])
+        if not data['pingable']: return {data['subnet']:[]}
         targets = [ips[i] for i in data['pingable'] if i < len(ips)]
 
         for i in range(0, len(targets), 10):
