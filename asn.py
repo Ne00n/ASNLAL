@@ -88,8 +88,7 @@ while True:
                     with open(f"{path}/data/{asn}.json") as handle: asnData =  json.loads(handle.read())
                 except Exception as e:
                     print(f"Error, failed to load {asn}: {e}")
-                    if not os.path.isfile(f"{path}/data/{asn}.json"):
-                        os.remove(f"{path}/data/{asn}.json")
+                    if os.path.isfile(f"{path}/data/{asn}.json"): os.remove(f"{path}/data/{asn}.json")
                     continue
                 for subnet, details in data.items():
                     if not subnet in asnData:
