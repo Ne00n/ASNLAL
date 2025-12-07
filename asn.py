@@ -1,7 +1,7 @@
 import multiprocessing as mp, systemd.daemon, hashlib, random, signal, json, time, os
 from Class.base import Base
 
-refresh, shutdown, tableUpdated = 0, False, False
+refresh, shutdown, tableUpdated = 0, False, True
 
 def gracefulExit(signal_number,stack_frame):
     global shutdown
