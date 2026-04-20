@@ -71,7 +71,7 @@ while True:
 
     if refresh < int(time.time()):
         print("Updating asn's")
-        if config['dataSrc']:
+        if config['dataSrc'] and config['fetchASN']:
             success, req = tools.call(f"{config['dataSrc']}/asn.json")
             if success:
                 if not req.json():
@@ -85,6 +85,8 @@ while True:
                         break
             elif not success:
                 print("Failed to fetch asn's")
+        else:
+            print("Skipping fetching asn.json from src")
         refresh = int(time.time()) + (60*10)
 
         if tableUpdated:
