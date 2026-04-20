@@ -136,18 +136,22 @@ while True:
                     tmpSubnets = tools.splitTo24(prefix)
                     prefixes[firstOctet].append([prefix,tmpSubnets,details])
 
-                seed, cores = {}, int(len(os.sched_getaffinity(0))) -1
+                seed, cores, err = {}, int(len(os.sched_getaffinity(0))) -1, False
                 for firstOctet, segment in prefixes.items():
                     print(f"Downloading file https://data.serv.app/files/{firstOctet}.txt")
                     success, req = tools.call(f"https://data.serv.app/files/{firstOctet}.txt")
-                    if not success: continue
-                    if not req.text: continue
+                    if not success or not req.text: 
+                        err = True
+                        break
                     ips = req.text.splitlines()
 
                     with multiprocessing.Pool(processes=cores, initializer=initWorker, initargs=(ips,)) as pool:
                         results = pool.starmap(processOctet, prefixes[firstOctet])
                     for result in results:
                         seed.update(result)
+                if err: 
+                    time.sleep(300)
+                    break
                 print(f"Saving seeds for {file}")
                 with open(f"{path}/seeds/{file}", 'w') as f: json.dump(seed, f)
                 if os.path.isfile(f"{path}/seeds/version.json"):
