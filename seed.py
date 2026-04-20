@@ -61,6 +61,9 @@ while True:
         print(f"Fetching bgp.tools/table.txt")
         success, req = tools.call("https://bgp.tools/table.txt")
         if success:
+            if not req.text: 
+                time.sleep(30)
+                continue
             with open(f"{path}/src/table.txt", 'w') as file: file.write(req.text)
             tableUpdated = True #trigger refresh
         elif not success and not os.path.isfile(f"{path}/src/table.txt"): 
@@ -71,6 +74,9 @@ while True:
         if config['dataSrc']:
             success, req = tools.call(f"{config['dataSrc']}/asn.json")
             if success:
+                if not req.json():
+                    time.sleep(30)
+                    continue
                 config['asnList'] = req.json()
                 for asn in config['asnList']:
                     if f"{asn}.json" not in files:
@@ -133,6 +139,7 @@ while True:
                     print(f"Downloading file https://data.serv.app/files/{firstOctet}.txt")
                     success, req = tools.call(f"https://data.serv.app/files/{firstOctet}.txt")
                     if not success: continue
+                    if not req.text: continue
                     ips = req.text.splitlines()
 
                     with multiprocessing.Pool(processes=cores, initializer=initWorker, initargs=(ips,)) as pool:
