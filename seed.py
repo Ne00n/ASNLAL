@@ -15,7 +15,7 @@ def initWorker(ips):
 
 def processOctet(prefix,subnets,details): 
     global sharedIPs       
-    seed = {}
+    seed = {prefix:{}}
     try:
         subnetOjects, ips = [ip_network(subnet) for subnet in [prefix]], []
         print(f"Presorting for {prefix}")
@@ -28,12 +28,12 @@ def processOctet(prefix,subnets,details):
         for subnet in subnetOjects:
             print(f"Sorting for {subnet}")
             for ip in ips:
-                if str(subnet) in seed and len(seed[str(subnet)]) > 3 and not "any" in details['settings']: continue
+                if str(subnet) in seed[prefix] and len(seed[prefix][str(subnet)]) > 3 and not "any" in details['settings']: continue
                 ip = ip_address(ip)
                 if ip in subnet:
-                    if not str(subnet) in seed: seed[str(subnet)] = []
-                    seed[str(subnet)].append(int(str(ip).split(".")[-1]))
-                    seed[str(subnet)].sort()
+                    if not str(subnet) in seed[prefix]: seed[prefix][str(subnet)] = []
+                    seed[prefix][str(subnet)].append(int(str(ip).split(".")[-1]))
+                    seed[prefix][str(subnet)].sort()
     except Exception as e:
         print(f"Failed to generate seeds: {e}")
     finally:
@@ -148,6 +148,7 @@ while True:
                     with multiprocessing.Pool(processes=cores, initializer=initWorker, initargs=(ips,)) as pool:
                         results = pool.starmap(processOctet, prefixes[firstOctet])
                     for result in results:
+                        print(result)
                         seed.update(result)
                 if err: 
                     time.sleep(300)
